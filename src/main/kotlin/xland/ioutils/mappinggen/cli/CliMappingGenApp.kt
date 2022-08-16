@@ -178,7 +178,8 @@ class CliMappingGenApp(private val runArgsHolder: RunArgsHolder,
                                 }
                                 else -> {
                                     parseLine(ln).ifRight {
-                                        val err = if (length > 127) substring(0..127) + "..." else this
+                                        val maxLength = System.getProperty("mappinggen.error.maxlen")?.toIntOrNull() ?: 256
+                                        val err = if (length > maxLength) substring(0..maxLength) + "..." else this
                                         println("ERROR: $err")
                                     }.ifLeft {
                                         hasWork = true

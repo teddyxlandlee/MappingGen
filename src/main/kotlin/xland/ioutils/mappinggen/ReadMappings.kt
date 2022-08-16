@@ -17,10 +17,13 @@ fun readMappings(runArgsHolder: RunArgsHolder) : MemoryMappingTree {
         ProGuardReader.read(runArgsHolder.proguardMapping.bufferedReader(), "fabric", "official", tree)
     } else {
         MappingReader.read(runArgsHolder.yarnOrIntermediaryMapping, tree.run {
-            MappingNsRenamer(this, mapOf("yarn" to "fabric"))
+            MappingNsRenamer(this, mapOf("named" to "fabric"))
         })
     }
     // Forge
-    TsrgReader.read(runArgsHolder.srgMapping.bufferedReader(), "official", runArgsHolder.forgeField, tree)
+    TsrgReader.read(runArgsHolder.srgMapping.bufferedReader(), "official", runArgsHolder.forgeField, tree.run {
+        MappingNsRenamer(this, mapOf("left" to "official", "right" to runArgsHolder.forgeField,
+                                          "obf" to "official", "srg" to runArgsHolder.forgeField))
+    })
     return tree
 }

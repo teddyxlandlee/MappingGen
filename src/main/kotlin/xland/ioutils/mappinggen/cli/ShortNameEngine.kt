@@ -72,13 +72,15 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                         0 -> Either.right(FailReason.absent("Can't find class ends with $name"))
                         1 -> Either.left(it[0])
                         else -> {
+                            val l : MutableList<String> = arrayListOf()
                             it.forEach { c ->
                                 val n = c.getName(namespaceTyped)
+                                l.add(n)
                                 classCacheMap[n] =
                                     c.getName(namespaceFrom) to c.getName(namespaceTo)
                                 classNodeMap[n] = c
                             }
-                            Either.right(FailReason.ambiguous("Suffix $name is too ambiguous (size=${it.size}): $it"))
+                            Either.right(FailReason.ambiguous("Suffix $name is too ambiguous (size=${it.size}): $l"))
                         }
                     }
                 }
@@ -114,9 +116,10 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                             }
                             1 -> Either.left(it[0])
                             else -> {
+                                val l : MutableList<String> = arrayListOf()
                                 it.forEach { f ->
                                     fieldCacheMap["${f.owner.getName(namespaceTyped)}.${f.getName(namespaceTyped)}" +
-                                            ":${f.getDesc(namespaceTyped)}"] =
+                                            ":${f.getDesc(namespaceTyped)}".also(l::add)] =
                                         EntryElement(
                                             f.owner.getName(namespaceFrom),
                                             f.getName(namespaceFrom),
@@ -125,7 +128,7 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                                 }
                                 val sb = StringBuilder("field ${owner}.${name}")
                                 if (desc != null) sb.append(":$desc")
-                                Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $it").toString()))
+                                Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $l").toString()))
                             }
                         }
                     }
@@ -147,9 +150,10 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                         }
                         1 -> Either.left(it[0])
                         else -> {
+                            val l : MutableList<String> = arrayListOf()
                             it.forEach { f ->
                                 fieldCacheMap["${f.owner.getName(namespaceTyped)}.${f.getName(namespaceTyped)}" +
-                                        ":${f.getDesc(namespaceTyped)}"] =
+                                        ":${f.getDesc(namespaceTyped)}".also(l::add)] =
                                     EntryElement(
                                         f.owner.getName(namespaceFrom),
                                         f.getName(namespaceFrom),
@@ -158,7 +162,7 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                             }
                             val sb = StringBuilder("field $name")
                             if (desc != null) sb.append(":$desc")
-                            Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $it").toString()))
+                            Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $l").toString()))
                         }
                     }
                 }
@@ -195,9 +199,10 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                             }
                             1 -> Either.left(it[0])
                             else -> {
+                                val l : MutableList<String> = arrayListOf()
                                 it.forEach { f ->
                                     methodCacheMap["${f.owner.getName(namespaceTyped)}.${f.getName(namespaceTyped)}" +
-                                            ":${f.getDesc(namespaceTyped)}"] =
+                                            ":${f.getDesc(namespaceTyped)}".also(l::add)] =
                                         EntryElement(
                                             f.owner.getName(namespaceFrom),
                                             f.getName(namespaceFrom),
@@ -206,7 +211,7 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                                 }
                                 val sb = StringBuilder("method ${owner}.${name}")
                                 if (desc != null) sb.append(":$desc")
-                                Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $it").toString()))
+                                Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $l").toString()))
                             }
                         }
                     }
@@ -228,9 +233,10 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                         }
                         1 -> Either.left(it[0])
                         else -> {
+                            val l : MutableList<String> = arrayListOf()
                             it.forEach { f ->
                                 methodCacheMap["${f.owner.getName(namespaceTyped)}.${f.getName(namespaceTyped)}" +
-                                        ":${f.getDesc(namespaceTyped)}"] =
+                                        ":${f.getDesc(namespaceTyped)}".also(l::add)] =
                                     EntryElement(
                                         f.owner.getName(namespaceFrom),
                                         f.getName(namespaceFrom),
@@ -239,7 +245,7 @@ open class ShortNameEngine(private val mappingTree: MappingTree,
                             }
                             val sb = StringBuilder("method $name")
                             if (desc != null) sb.append(":$desc")
-                            Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $it").toString()))
+                            Either.right(FailReason.ambiguous(sb.append(" is ambiguous (size=${it.size}): $l").toString()))
                         }
                     }
                 }
