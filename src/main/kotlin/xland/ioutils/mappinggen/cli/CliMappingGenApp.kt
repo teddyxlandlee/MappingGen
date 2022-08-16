@@ -30,15 +30,21 @@ class CliMappingGenApp(private val runArgsHolder: RunArgsHolder,
             val process = processes.indexOf(this[0])
             if (process < 0) return Either.right("Invalid process: ${this[0]}")
             var superClass : String? = null
+            var ignoreAbsent = false
             if (this.size > 3 && ">>" == this[2]) {
                 superClass = this[3]
+            } else if (this.size > 2) {
+                if ("!!" == this[2])
+                    ignoreAbsent = true
             }
-            return parseLine0(process, this[1], superClass)
+            return parseLine0(process, this[1], superClass, ignoreAbsent)
         }
     }
 
-    private fun parseLine0(process: Int, arg: String, superClass: String?,
-                           ignoreAbsent: Boolean = false) : Either<Unit, String> {
+    private fun parseLine0(
+        process: Int, arg: String, superClass: String?,
+        ignoreAbsent: Boolean = false
+    ) : Either<Unit, String> {
         when (process) {
             CLASS -> {
                 shortNameEngine.trySuggestClass((superClass ?: arg).replace('.', '/'))
@@ -49,10 +55,8 @@ class CliMappingGenApp(private val runArgsHolder: RunArgsHolder,
                     }.ifLeft {
                         treeTo.visitClass(this.first)
                         treeTo.visitDstName(MappedElementKind.CLASS, 0, this.second)
+                        println("class\t$first=$second")
                     }
-                if (superClass != null) {
-                    return parseLine0(CLASS, arg, null, true)
-                }
                 return Either.left(Unit)
             }
             FIELD -> {
@@ -67,10 +71,16 @@ class CliMappingGenApp(private val runArgsHolder: RunArgsHolder,
                     if (treeTo.visitClass(this.first.owner)) {
                         treeTo.visitField(first.name, first.desc)
                         treeTo.visitDstName(MappedElementKind.FIELD, 0, second)
+                        println("field\t$first=$second")
+
+                        if (superClass != null) {
+                            val realOwner = arg.substringBeforeLast('.').replace('.', '/')
+                            treeTo.visitClass(realOwner)
+                            treeTo.visitField(first.name, first.desc)
+                            treeTo.visitDstName(MappedElementKind.FIELD, 0, second)
+                            println("field\t${first.copy(owner=realOwner)}=$second")
+                        }
                     }
-                }
-                if (superClass != null) {
-                    return parseLine0(FIELD, arg, null, true)
                 }
                 return Either.left(Unit)
             }
@@ -86,10 +96,16 @@ class CliMappingGenApp(private val runArgsHolder: RunArgsHolder,
                     if (treeTo.visitClass(this.first.owner)) {
                         treeTo.visitMethod(first.name, first.desc)
                         treeTo.visitDstName(MappedElementKind.METHOD, 0, second)
+                        println("method\t$first=$second")
+
+                        if (superClass != null) {
+                            val realOwner = arg.substringBeforeLast('.').replace('.', '/')
+                            treeTo.visitClass(realOwner)
+                            treeTo.visitMethod(first.name, first.desc)
+                            treeTo.visitDstName(MappedElementKind.FIELD, 0, second)
+                            println("method\t${first.copy(owner=realOwner)}=$second")
+                        }
                     }
-                }
-                if (superClass != null) {
-                    return parseLine0(METHOD, arg, null, true)
                 }
                 return Either.left(Unit)
             }
